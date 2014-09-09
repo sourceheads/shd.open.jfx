@@ -1,0 +1,40 @@
+<?import org.sourceheads.jfx.controls.ResizePane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <HBox spacing="4">
+        <padding>
+            <Insets left="8" top="4" right="8" bottom="4"/>
+        </padding>
+        <ResizePane side="RIGHT">
+            <TextField text="Blah" minWidth="100" maxWidth="300"/>
+        </ResizePane>
+        <ResizePane side="RIGHT">
+            <Button text="Blah" minWidth="100" maxWidth="300"/>
+        </ResizePane>
+        <Button text="Button"/>
+    </HBox>
+    <ResizePane>
+        <!--<ListView minHeight="100" prefHeight="200" maxHeight="300"/>-->
+        <ScrollPane styleClass="removeInsetBorder" maxHeight="-1"> <!--minHeight="100" prefHeight="200" maxHeight="-Infinity">-->
+            <HBox spacing="8">
+                <padding>
+                    <Insets left="8" top="8" right="8" bottom="8"/>
+                </padding>
+                <ListView/>
+                <ListView/>
+            </HBox>
+        </ScrollPane>
+    </ResizePane>
+    <Label text="test"/>
+    <AnchorPane>
+
+    </AnchorPane>
+</VBox>

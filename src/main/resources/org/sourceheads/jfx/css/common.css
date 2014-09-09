@@ -1,0 +1,11 @@
+.removeInsetBorder {
+    -fx-background-insets: 0, 0;
+}
+
+.removeInsetBorder:focused {
+    -fx-background-insets: -1.4, -0.3, 1;
+}
+
+.whiteBg {
+    -fx-background-color: white;
+}

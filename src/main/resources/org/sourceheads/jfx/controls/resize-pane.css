@@ -1,0 +1,13 @@
+.resize-pane > .resize-pane-handle {
+    -fx-padding: 0 0.25em 0 0.25em; /* 0 3 0 3 */
+}
+
+.resize-pane:vertical > .resize-pane-handle {
+    -fx-background-color: -fx-box-border, -fx-inner-border-horizontal;
+    -fx-background-insets: 0, 0 1 0 1;
+}
+
+.resize-pane:horizontal > .resize-pane-handle {
+    -fx-background-color: -fx-box-border, -fx-inner-border;
+    -fx-background-insets: 0, 1 0 1 0;
+}

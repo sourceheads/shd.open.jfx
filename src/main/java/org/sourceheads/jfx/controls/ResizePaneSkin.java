@@ -20,10 +20,9 @@ import javafx.scene.shape.Rectangle;
  */
 public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<ResizePane>> {
 
-    private Node content;
+    private Content content;
     private Handle handle;
-    Side side;
-    private double minSize;
+    protected Side side;
 
     protected ResizePaneSkin(final ResizePane resizePane) {
         super(resizePane, new BehaviorBase<>(resizePane, Collections.emptyList()));
@@ -31,23 +30,10 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         side = resizePane.getSide();
 
         handle = new Handle();
-        content = resizePane.getContent();
+        content = new Content(resizePane.getContent());
         getChildren().setAll(content, handle);
 
-        handle.setOnMousePressed(event -> {
-            minSize = resizePane.minHeight(-1);
-            handle.setInitialPos(resizePane.getHeight());
-            handle.setPressPos(event.getSceneY());
-            event.consume();
-        });
-
-        handle.setOnMouseDragged(event -> {
-            double delta = 0;
-            delta = event.getSceneY();
-            delta -= handle.getPressPos();
-            resizePane.setMinHeight(Math.max(handle.getInitialPos() + delta, minSize));
-            event.consume();
-        });
+        initHandleMouseHandlers();
 
         registerChangeListener(resizePane.contentProperty(), "CONTENT");
         registerChangeListener(resizePane.sideProperty(), "SIDE");
@@ -55,21 +41,51 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         registerChangeListener(resizePane.heightProperty(), "HEIGHT");
     }
 
+    private void initHandleMouseHandlers() {
+        handle.setOnMousePressed(event -> {
+            handle.setInitialPos(content.getSize());
+            handle.setPressPos(side.isHorizontal() ? event.getSceneY() : event.getSceneX());
+            event.consume();
+        });
+
+        handle.setOnMouseDragged(event -> {
+            final double delta = (side.isHorizontal() ? event.getSceneY() : event.getSceneX()) - handle.getPressPos();
+            switch (side) {
+                case BOTTOM:
+                case RIGHT:
+                    content.setSize(handle.getInitialPos() + delta);
+                    getSkinnable().requestLayout();
+                    break;
+                case TOP:
+                case LEFT:
+                    content.setSize(handle.getInitialPos() - delta);
+                    getSkinnable().requestLayout();
+                    break;
+                default:
+                    throw new IllegalStateException("Unsupported side: " + side);
+            }
+            event.consume();
+        });
+    }
+
     @Override
     protected void handleControlPropertyChanged(final String property) {
         super.handleControlPropertyChanged(property);
-        if ("CONTENT".equals(property)) {
-            content = getSkinnable().getContent();
-            getChildren().setAll(content, handle);
-            getSkinnable().requestLayout();
-        }
-        else if ("SIDE".equals(property)) {
-            side = getSkinnable().getSide();
-            handle.setGrabberStyle(side);
-            getSkinnable().requestLayout();
-        }
-        else if ("WIDTH".equals(property) || "HEIGHT".equals(property)) {
-            getSkinnable().requestLayout();
+        switch (property) {
+            case "CONTENT":
+                content = new Content(getSkinnable().getContent());
+                getChildren().setAll(content, handle);
+                getSkinnable().requestLayout();
+                break;
+            case "SIDE":
+                side = getSkinnable().getSide();
+                handle.setGrabberStyle(side);
+                getSkinnable().requestLayout();
+                break;
+            case "WIDTH":
+            case "HEIGHT":
+                getSkinnable().requestLayout();
+                break;
         }
     }
 
@@ -81,63 +97,92 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         final double paddingY = snappedTopInset();
         final double handleSize = handle.prefWidth(-1);
 
-        if (content != null) {
-            content.setClip(new Rectangle(width, height - handleSize));
-            layoutInArea(content, paddingX, paddingY, width, height - handleSize,
-                    0, HPos.CENTER, VPos.CENTER);
+        if (side.isHorizontal()) {
+            handle.resize(width, handleSize);
+        }
+        else {
+            handle.resize(handleSize, height);
         }
 
-        handle.resize(width, handleSize);
-        positionInArea(handle, paddingX, height - handleSize, width, handleSize,
-                0, HPos.CENTER, VPos.CENTER);
+        switch (side) {
+            case BOTTOM:
+                getSkinnable().resize(width, content.getSize() + handleSize);
+                content.setClipSize(width, content.getSize());
+                layoutInArea(content, paddingX, paddingY, width, content.getSize());
+                positionInArea(handle, paddingX, content.getSize(), width, handleSize);
+                break;
+            case TOP:
+                content.setClipSize(width, height - handleSize);
+                layoutInArea(content, paddingX, paddingY + handleSize, width, height - handleSize);
+                positionInArea(handle, paddingX, paddingY, width, handleSize);
+                break;
+            case LEFT:
+                content.setClipSize(width - handleSize, height);
+                layoutInArea(content, paddingX + handleSize, paddingY, width - handleSize, height);
+                positionInArea(handle, paddingX, paddingY, handleSize, height);
+                break;
+            case RIGHT:
+                content.setClipSize(width - handleSize, height);
+                layoutInArea(content, paddingX, paddingY, width - handleSize, height);
+                positionInArea(handle, width - handleSize, paddingY, handleSize, height);
+                break;
+            default:
+                throw new IllegalStateException("Unsupported side: " + side);
+        }
+    }
+
+    private void positionInArea(final Node child, final double areaX, final double areaY,
+            final double areaWidth, final double areaHeight) {
+        positionInArea(child, areaX, areaY, areaWidth, areaHeight, 0, HPos.CENTER, VPos.CENTER);
+    }
+
+    private void layoutInArea(final Node child, final double areaX, final double areaY,
+            final double areaWidth, final double areaHeight) {
+        layoutInArea(child, areaX, areaY, areaWidth, areaHeight, 0, HPos.CENTER, VPos.CENTER);
     }
 
     @Override
     protected double computeMinWidth(final double height, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
-        return (side.isVertical() ? handle.prefWidth(-1) : 0)
-                + (content != null ? content.minWidth(-1) : 0)
-                + leftInset + rightInset;
+        return leftInset + rightInset + (side.isVertical()
+                ? content.getSize() + handle.prefWidth(-1)
+                : content.minWidth(-1));
     }
 
     @Override
     protected double computeMinHeight(final double width, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
-        return (side.isHorizontal() ? handle.prefWidth(-1) : 0)
-                + (content != null ? content.minHeight(-1) : 0)
-                + topInset + bottomInset;
-    }
-
-    @Override
-    protected double computeMaxWidth(final double height, final double topInset, final double rightInset,
-            final double bottomInset, final double leftInset) {
-        return (side.isVertical() ? handle.prefWidth(-1) : 0)
-                + (content != null ? content.maxWidth(-1) : 0)
-                + leftInset + rightInset;
-    }
-
-    @Override
-    protected double computeMaxHeight(final double width, final double topInset, final double rightInset,
-            final double bottomInset, final double leftInset) {
-        return (side.isHorizontal() ? handle.prefWidth(-1) : 0)
-                + (content != null ? content.maxHeight(-1) : 0)
-                + topInset + bottomInset;
+        return topInset + bottomInset + (side.isHorizontal()
+                ? content.getSize() + handle.prefWidth(-1)
+                : content.minHeight(-1));
     }
 
     @Override
     protected double computePrefWidth(final double height, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
-        return (side.isVertical() ? handle.prefWidth(-1) : 0)
-                + (content != null ? content.prefWidth(-1) : 0)
-                + leftInset + rightInset;
+        return leftInset + rightInset + (side.isVertical()
+                ? content.getSize() + handle.prefWidth(-1)
+                : content.prefWidth(-1));
     }
 
     @Override
     protected double computePrefHeight(final double width, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
-        return (side.isHorizontal() ? handle.prefWidth(-1) : 0)
-                + (content != null ? content.prefHeight(-1) : 0)
-                + topInset + bottomInset;
+        return topInset + bottomInset + (side.isHorizontal()
+                ? content.getSize() + handle.prefWidth(-1)
+                : content.prefHeight(-1));
+    }
+
+    @Override
+    protected double computeMaxWidth(final double height, final double topInset, final double rightInset,
+            final double bottomInset, final double leftInset) {
+        return leftInset + rightInset + content.maxWidth(-1) + (side.isVertical() ? handle.prefWidth(-1) : 0);
+    }
+
+    @Override
+    protected double computeMaxHeight(final double width, final double topInset, final double rightInset,
+            final double bottomInset, final double leftInset) {
+        return topInset + bottomInset + content.maxHeight(-1) + (side.isHorizontal() ? handle.prefWidth(-1) : 0);
     }
 
     class Handle extends StackPane {
@@ -197,35 +242,42 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
             }
         }
 
-        @Override protected double computeMinWidth(final double height) {
+        @Override
+        protected double computeMinWidth(final double height) {
             return computePrefWidth(height);
         }
 
-        @Override protected double computeMinHeight(final double width) {
+        @Override
+        protected double computeMinHeight(final double width) {
             return computePrefHeight(width);
         }
 
-        @Override protected double computePrefWidth(final double height) {
+        @Override
+        protected double computePrefWidth(final double height) {
             return snappedLeftInset() + snappedRightInset();
         }
 
-        @Override protected double computePrefHeight(final double width) {
+        @Override
+        protected double computePrefHeight(final double width) {
             return snappedTopInset() + snappedBottomInset();
         }
 
-        @Override protected double computeMaxWidth(final double height) {
+        @Override
+        protected double computeMaxWidth(final double height) {
             return computePrefWidth(height);
         }
 
-        @Override protected double computeMaxHeight(final double width) {
+        @Override
+        protected double computeMaxHeight(final double width) {
             return computePrefHeight(width);
         }
 
-        @Override protected void layoutChildren() {
+        @Override
+        protected void layoutChildren() {
             final double grabberWidth = grabber.prefWidth(-1);
             final double grabberHeight = grabber.prefHeight(-1);
-            final double grabberX = (getWidth() - grabberWidth)/2;
-            final double grabberY = (getHeight() - grabberHeight)/2;
+            final double grabberX = (getWidth() - grabberWidth) / 2;
+            final double grabberY = (getHeight() - grabberHeight) / 2;
             grabber.resize(grabberWidth, grabberHeight);
             positionInArea(grabber, grabberX, grabberY, grabberWidth, grabberHeight,
                     /*baseline ignored*/ 0, HPos.CENTER, VPos.CENTER);
@@ -245,6 +297,56 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
 
         public void setPressPos(final double pressPos) {
             this.pressPos = pressPos;
+        }
+    }
+
+    class Content extends StackPane {
+
+        private Node content;
+        private Rectangle clipRect;
+        private double size;
+
+        public Content(final Node node) {
+            this.content = node;
+            this.size = side.isVertical() ? content.prefWidth(-1) : content.prefHeight(-1);
+            this.clipRect = new Rectangle();
+            setClip(clipRect);
+            getChildren().add(node);
+        }
+
+        public Node getContent() {
+            return content;
+        }
+
+        protected void setClipSize(final double w, final double h) {
+            clipRect.setWidth(w);
+            clipRect.setHeight(h);
+        }
+
+        public double getSize() {
+            return size;
+        }
+
+        public void setSize(final double size) {
+            this.size = Math.min(Math.max(size, getMinSize()), getMaxSize());
+        }
+
+        public double getMinSize() {
+            return content != null ? (side.isVertical() ? content.minWidth(-1) : content.minHeight(-1)) : 0;
+        }
+
+        public double getMaxSize() {
+            return content != null ? (side.isVertical() ? content.maxWidth(-1) : content.maxHeight(-1)) : 0;
+        }
+
+        @Override
+        protected double computeMaxWidth(final double height) {
+            return snapSize(content.maxWidth(height));
+        }
+
+        @Override
+        protected double computeMaxHeight(final double width) {
+            return snapSize(content.maxHeight(width));
         }
     }
 }

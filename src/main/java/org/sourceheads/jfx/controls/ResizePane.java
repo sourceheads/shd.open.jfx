@@ -44,6 +44,17 @@ public class ResizePane extends Control {
         pseudoClassStateChanged(HORIZONTAL_PSEUDOCLASS_STATE, true);
     }
 
+    public ResizePane(final Node content) {
+        this();
+        this.content.set(content);
+    }
+
+    public ResizePane(final Side side, final Node content) {
+        this();
+        setSide(side);
+        this.content.set(content);
+    }
+
     @Override
     protected Skin<?> createDefaultSkin() {
         return new ResizePaneSkin(this);
