@@ -11,3 +11,34 @@
     -fx-background-color: -fx-box-border, -fx-inner-border;
     -fx-background-insets: 0, 1 0 1 0;
 }
+
+
+.resize-pane.invisible-handle > .resize-pane-handle {
+    -fx-background-color: none;
+    -fx-background-insets: 0;
+}
+
+
+.resize-pane.grabber-handle > .resize-pane-handle {
+    -fx-background-color: none;
+    -fx-background-insets: 0;
+    -fx-padding: 0 3 0 2;
+}
+
+.resize-pane.grabber-handle > .resize-pane-handle > .horizontal-grabber {
+    -fx-padding: 2 6 1 6;
+    -fx-border-color: -fx-box-border;
+    -fx-shape: "M 0 0 h 14 M 0 2 h 14 M 0 4 h 14";
+    -fx-scale-shape: false;
+    /*-fx-background-color: -fx-outer-border, -fx-body-color;
+    -fx-background-insets: 0, 1 0;*/
+}
+
+.resize-pane.grabber-handle > .resize-pane-handle > .vertical-grabber {
+    -fx-padding: 6 2 6 1;
+    -fx-border-color: -fx-box-border;
+    -fx-shape: "M 0 0 v 14 M 2 0 v 14 M 4 0 v 14";
+    -fx-scale-shape: false;
+    /*-fx-background-color: -fx-outer-border, -fx-body-color;
+    -fx-background-insets: 0, 1 0;*/
+}

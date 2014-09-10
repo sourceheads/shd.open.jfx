@@ -308,7 +308,9 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
 
         public Content(final Node node) {
             this.content = node;
-            this.size = side.isVertical() ? content.prefWidth(-1) : content.prefHeight(-1);
+            this.size = side.isVertical()
+                    ? Math.max(content.prefWidth(-1), content.minWidth(-1))
+                    : Math.max(content.prefHeight(-1), content.minHeight(-1));
             this.clipRect = new Rectangle();
             setClip(clipRect);
             getChildren().add(node);
