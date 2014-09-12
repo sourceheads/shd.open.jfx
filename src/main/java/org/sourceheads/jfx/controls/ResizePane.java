@@ -40,11 +40,6 @@ public class ResizePane extends Control {
     public ResizePane() {
         getStyleClass().setAll(DEFAULT_CLASS);
         ((StyleableProperty<Boolean>) focusTraversableProperty()).applyStyle(null, false);
-
-        content.addListener((observable, oldValue, newValue) -> {
-
-        });
-
         pseudoClassStateChanged(HORIZONTAL_PSEUDOCLASS_STATE, true);
     }
 

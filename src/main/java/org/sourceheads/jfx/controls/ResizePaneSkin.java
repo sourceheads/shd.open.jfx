@@ -307,20 +307,18 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
 
         private Node content;
         private Rectangle clipRect;
-        private double size;
+        private double size = 0;
 
         public Content(final Node node) {
-            this.content = node;
-            this.size = side.isVertical()
-                    ? Math.max(content.prefWidth(-1), content.minWidth(-1))
-                    : Math.max(content.prefHeight(-1), content.minHeight(-1));
+            if (node != null) {
+                this.content = node;
+                this.size = side.isVertical()
+                        ? Math.max(content.prefWidth(-1), content.minWidth(-1))
+                        : Math.max(content.prefHeight(-1), content.minHeight(-1));
+                getChildren().add(node);
+            }
             this.clipRect = new Rectangle();
             setClip(clipRect);
-            getChildren().add(node);
-        }
-
-        public Node getContent() {
-            return content;
         }
 
         protected void setClipSize(final double w, final double h) {
@@ -346,12 +344,12 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
 
         @Override
         protected double computeMaxWidth(final double height) {
-            return snapSize(content.maxWidth(height));
+            return content != null ? snapSize(content.maxWidth(height)) : Double.MAX_VALUE;
         }
 
         @Override
         protected double computeMaxHeight(final double width) {
-            return snapSize(content.maxHeight(width));
+            return content != null ? snapSize(content.maxHeight(width)) : Double.MAX_VALUE;
         }
     }
 }
