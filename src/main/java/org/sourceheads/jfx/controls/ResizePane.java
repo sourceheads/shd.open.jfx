@@ -5,13 +5,16 @@ import java.util.Collections;
 import java.util.List;
 
 import com.sun.javafx.css.converters.EnumConverter;
+import com.sun.javafx.css.converters.SizeConverter;
 
 import javafx.beans.DefaultProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.CssMetaData;
 import javafx.css.PseudoClass;
 import javafx.css.Styleable;
+import javafx.css.StyleableDoubleProperty;
 import javafx.css.StyleableObjectProperty;
 import javafx.css.StyleableProperty;
 import javafx.geometry.Side;
@@ -30,6 +33,7 @@ public class ResizePane extends Control {
     private static final String DEFAULT_CLASS = "resize-pane";
 
     private ObjectProperty<Side> side;
+    private DoubleProperty spacing;
     private final ObjectProperty<Node> content = new SimpleObjectProperty<>();
 
     @SuppressWarnings("unchecked")
@@ -54,6 +58,8 @@ public class ResizePane extends Control {
         setSide(side);
         this.content.set(content);
     }
+
+    //
 
     @Override
     protected Skin<?> createDefaultSkin() {
@@ -112,6 +118,42 @@ public class ResizePane extends Control {
         this.content.set(content);
     }
 
+    public final DoubleProperty spacingProperty() {
+        if (spacing == null) {
+            spacing = new StyleableDoubleProperty() {
+
+                @Override
+                public void invalidated() {
+                    requestLayout();
+                }
+
+                @Override
+                public Object getBean() {
+                    return ResizePane.this;
+                }
+
+                @Override
+                public String getName() {
+                    return "spacing";
+                }
+
+                @Override
+                public CssMetaData<ResizePane, Number> getCssMetaData() {
+                    return StyleableProperties.SPACING;
+                }
+            };
+        }
+        return spacing;
+    }
+
+    public final void setSpacing(final double value) {
+        spacingProperty().set(value);
+    }
+
+    public final double getSpacing() {
+        return spacing == null ? 0 : spacing.get();
+    }
+
     //
 
     private static final PseudoClass VERTICAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("vertical");
@@ -140,12 +182,30 @@ public class ResizePane extends Control {
             }
         };
 
+        private static final CssMetaData<ResizePane, Number> SPACING = new CssMetaData<ResizePane, Number>(
+                "-fx-spacing", SizeConverter.getInstance(), 0d) {
+
+            @Override
+            @SuppressWarnings("PrivateMemberAccessBetweenOuterAndInnerClass")
+            public boolean isSettable(final ResizePane node) {
+                return node.spacing == null || !node.spacing.isBound();
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public StyleableProperty<Number> getStyleableProperty(final ResizePane node) {
+                return (StyleableProperty<Number>) node.spacingProperty();
+            }
+        };
+
+
         private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES;
 
         static {
             final ArrayList<CssMetaData<? extends Styleable, ?>> styleables =
                     new ArrayList<>(Control.getClassCssMetaData());
             styleables.add(SIDE);
+            styleables.add(SPACING);
             STYLEABLES = Collections.unmodifiableList(styleables);
         }
     }

@@ -96,6 +96,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         final double paddingX = snappedLeftInset();
         final double paddingY = snappedTopInset();
         final double handleSize = handle.prefWidth(-1);
+        final double spacing = getSkinnable().getSpacing();
 
         if (side.isHorizontal()) {
             handle.resize(width, handleSize);
@@ -109,22 +110,22 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
                 getSkinnable().resize(width, content.getSize() + handleSize);
                 content.setClipSize(width, content.getSize());
                 layoutInArea(content, paddingX, paddingY, width, content.getSize());
-                positionInArea(handle, paddingX, content.getSize(), width, handleSize);
+                positionInArea(handle, paddingX, paddingY + content.getSize() + spacing, width, handleSize);
                 break;
             case TOP:
                 content.setClipSize(width, height - handleSize);
-                layoutInArea(content, paddingX, paddingY + handleSize, width, height - handleSize);
+                layoutInArea(content, paddingX, paddingY + handleSize + spacing, width, content.getSize());
                 positionInArea(handle, paddingX, paddingY, width, handleSize);
                 break;
             case LEFT:
                 content.setClipSize(width - handleSize, height);
-                layoutInArea(content, paddingX + handleSize, paddingY, width - handleSize, height);
+                layoutInArea(content, paddingX + handleSize + spacing, paddingY, content.getSize(), height);
                 positionInArea(handle, paddingX, paddingY, handleSize, height);
                 break;
             case RIGHT:
                 content.setClipSize(width - handleSize, height);
-                layoutInArea(content, paddingX, paddingY, width - handleSize, height);
-                positionInArea(handle, width - handleSize, paddingY, handleSize, height);
+                layoutInArea(content, paddingX, paddingY, content.getSize(), height);
+                positionInArea(handle, paddingX + content.getSize() + spacing, paddingY, handleSize, height);
                 break;
             default:
                 throw new IllegalStateException("Unsupported side: " + side);
@@ -145,7 +146,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
     protected double computeMinWidth(final double height, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
         return leftInset + rightInset + (side.isVertical()
-                ? content.getSize() + handle.prefWidth(-1)
+                ? content.getSize() + handle.prefWidth(-1) + getSkinnable().getSpacing()
                 : content.minWidth(-1));
     }
 
@@ -153,7 +154,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
     protected double computeMinHeight(final double width, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
         return topInset + bottomInset + (side.isHorizontal()
-                ? content.getSize() + handle.prefWidth(-1)
+                ? content.getSize() + handle.prefWidth(-1) + getSkinnable().getSpacing()
                 : content.minHeight(-1));
     }
 
@@ -161,7 +162,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
     protected double computePrefWidth(final double height, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
         return leftInset + rightInset + (side.isVertical()
-                ? content.getSize() + handle.prefWidth(-1)
+                ? content.getSize() + handle.prefWidth(-1) + getSkinnable().getSpacing()
                 : content.prefWidth(-1));
     }
 
@@ -169,20 +170,22 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
     protected double computePrefHeight(final double width, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
         return topInset + bottomInset + (side.isHorizontal()
-                ? content.getSize() + handle.prefWidth(-1)
+                ? content.getSize() + handle.prefWidth(-1) + getSkinnable().getSpacing()
                 : content.prefHeight(-1));
     }
 
     @Override
     protected double computeMaxWidth(final double height, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
-        return leftInset + rightInset + content.maxWidth(-1) + (side.isVertical() ? handle.prefWidth(-1) : 0);
+        return leftInset + rightInset + content.maxWidth(-1) +
+                (side.isVertical() ? handle.prefWidth(-1) + getSkinnable().getSpacing() : 0);
     }
 
     @Override
     protected double computeMaxHeight(final double width, final double topInset, final double rightInset,
             final double bottomInset, final double leftInset) {
-        return topInset + bottomInset + content.maxHeight(-1) + (side.isHorizontal() ? handle.prefWidth(-1) : 0);
+        return topInset + bottomInset + content.maxHeight(-1) +
+                (side.isHorizontal() ? handle.prefWidth(-1) + getSkinnable().getSpacing() : 0);
     }
 
     class Handle extends StackPane {
