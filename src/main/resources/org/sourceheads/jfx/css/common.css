@@ -9,3 +9,10 @@
 .whiteBg {
     -fx-background-color: white;
 }
+
+/* split pane */
+
+.split-pane.invisible-divider > .split-pane-divider {
+    -fx-background-color: none;
+    -fx-background-insets: 0;
+}
