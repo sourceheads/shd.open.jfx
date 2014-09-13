@@ -3,6 +3,8 @@ shd.open.jfx
 
 Stuff for JavaFX 8. Work in progress.
 
+[![Build Status](https://travis-ci.org/sourceheads/shd.open.jfx.svg)](https://travis-ci.org/sourceheads/shd.open.jfx)
+
 License
 -------
 
