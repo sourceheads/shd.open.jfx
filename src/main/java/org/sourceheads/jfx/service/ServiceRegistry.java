@@ -21,6 +21,12 @@ public interface ServiceRegistry extends Callback<Class<?>, Object> {
 
     public void initialize();
 
+    public void preShow();
+
+    public void onCloseRequest();
+
+    public void stop();
+
     public <T> T loadFxml(URL source);
 
     public <T> T loadFxml(URL source, Supplier<?> serviceSupplier);
