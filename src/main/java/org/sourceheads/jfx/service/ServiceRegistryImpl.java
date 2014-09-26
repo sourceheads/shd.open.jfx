@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 
 /**
@@ -71,6 +72,14 @@ public class ServiceRegistryImpl implements ServiceRegistry {
     @Override
     public void preShow() {
         services.forEach(ThrowingBiConsumer.wrap((k, v) -> invoke(v, PreShow.class)));
+    }
+
+    @Override
+    public void postShow() {
+        services.forEach(ThrowingBiConsumer.wrap((k, v) -> invoke(v, PostShow.class)));
+
+        new Thread(() -> Platform.runLater(() ->
+                services.forEach(ThrowingBiConsumer.wrap((k, v) -> invoke(v, PostShowDelayed.class))))).start();
     }
 
     @Override

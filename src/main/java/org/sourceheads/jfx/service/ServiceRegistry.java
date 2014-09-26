@@ -23,6 +23,8 @@ public interface ServiceRegistry extends Callback<Class<?>, Object> {
 
     public void preShow();
 
+    public void postShow();
+
     public void onCloseRequest();
 
     public void stop();
