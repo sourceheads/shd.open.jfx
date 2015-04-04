@@ -5,15 +5,19 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -136,10 +140,37 @@ public class ServiceRegistryImpl implements ServiceRegistry {
         for (final Field field : getAllFields(serviceClass)) {
             if (field.isAnnotationPresent(Autowired.class)) {
                 field.setAccessible(true);
-                final Object dependency = Objects.requireNonNull(services.get(field.getType()));
-                field.set(service, dependency);
+                final Object dependency = resolveDependency(field);
+                field.set(service, Objects.requireNonNull(dependency));
             }
         }
+    }
+
+    protected Object resolveDependency(final Field field) {
+        final Class<?> type = field.getType();
+        if (Collection.class.isAssignableFrom(type)) {
+            final Class<?> collectionType = getCollectionType(field);
+            return findServices(collectionType);
+        }
+
+        return services.get(type);
+    }
+
+    protected Class<?> getCollectionType(final Field field) {
+        final Type genericType = field.getGenericType();
+        if (genericType instanceof ParameterizedType) {
+            final Type[] typeArguments = ((ParameterizedType) genericType).getActualTypeArguments();
+            return (Class<?>) typeArguments[0];
+        }
+        throw new IllegalStateException("Failed to get collection type: field=" + field);
+    }
+
+    protected <T> Collection<T> findServices(final Class<T> clazz) {
+        return services.entrySet().stream()
+                .filter(e -> clazz.isAssignableFrom(e.getKey()))
+                .map(Map.Entry::getValue)
+                .map(clazz::cast)
+                .collect(Collectors.toList());
     }
 
     protected <T> void initializeService(final T service) throws InvocationTargetException, IllegalAccessException {
