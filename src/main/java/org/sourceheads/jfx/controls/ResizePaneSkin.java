@@ -134,12 +134,12 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
 
     private void positionInArea(final Node child, final double areaX, final double areaY,
             final double areaWidth, final double areaHeight) {
-        positionInArea(child, areaX, areaY, areaWidth, areaHeight, 0, HPos.CENTER, VPos.CENTER);
+        positionInArea(child, areaX, areaY, areaWidth, areaHeight, 0, HPos.LEFT, VPos.TOP);
     }
 
     private void layoutInArea(final Node child, final double areaX, final double areaY,
             final double areaWidth, final double areaHeight) {
-        layoutInArea(child, areaX, areaY, areaWidth, areaHeight, 0, HPos.CENTER, VPos.CENTER);
+        layoutInArea(child, areaX, areaY, areaWidth, areaHeight, 0, HPos.LEFT, VPos.TOP);
     }
 
     @Override
@@ -201,12 +201,12 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
 
                 @Override
                 protected double computeMinWidth(final double height) {
-                    return 0;
+                    return computePrefWidth(height);
                 }
 
                 @Override
                 protected double computeMinHeight(final double width) {
-                    return 0;
+                    return computePrefHeight(width);
                 }
 
                 @Override
@@ -221,26 +221,24 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
 
                 @Override
                 protected double computeMaxWidth(final double height) {
-                    return computePrefWidth(-1);
+                    return computePrefWidth(height);
                 }
 
                 @Override
                 protected double computeMaxHeight(final double width) {
-                    return computePrefHeight(-1);
+                    return computePrefHeight(width);
                 }
             };
+            grabber.getStyleClass().setAll("resize-pane-grabber");
             setGrabberStyle(side);
             getChildren().add(grabber);
         }
 
         public final void setGrabberStyle(final Side side) {
-            grabber.getStyleClass().clear();
             if (side.isHorizontal()) {
-                grabber.getStyleClass().setAll("horizontal-grabber");
                 setCursor(Cursor.V_RESIZE);
             }
             else {
-                grabber.getStyleClass().setAll("vertical-grabber");
                 setCursor(Cursor.H_RESIZE);
             }
         }
@@ -279,11 +277,22 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         protected void layoutChildren() {
             final double grabberWidth = grabber.prefWidth(-1);
             final double grabberHeight = grabber.prefHeight(-1);
-            final double grabberX = (getWidth() - grabberWidth) / 2;
-            final double grabberY = (getHeight() - grabberHeight) / 2;
             grabber.resize(grabberWidth, grabberHeight);
-            positionInArea(grabber, grabberX, grabberY, grabberWidth, grabberHeight,
-                    /*baseline ignored*/ 0, HPos.CENTER, VPos.CENTER);
+
+            switch (side) {
+                case BOTTOM:
+                    positionInArea(grabber, 0, 0, getWidth(), getHeight(), 0, HPos.CENTER, VPos.TOP);
+                    break;
+                case TOP:
+                    positionInArea(grabber, 0, 0, getWidth(), getHeight(), 0, HPos.CENTER, VPos.BOTTOM);
+                    break;
+                case LEFT:
+                    positionInArea(grabber, 0, 0, getWidth(), getHeight(), 0, HPos.RIGHT, VPos.CENTER);
+                    break;
+                case RIGHT:
+                    positionInArea(grabber, 0, 0, getWidth(), getHeight(), 0, HPos.LEFT, VPos.CENTER);
+                    break;
+            }
         }
 
         public double getInitialPos() {

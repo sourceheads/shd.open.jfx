@@ -9,6 +9,7 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" prefHeight="800" prefWidth="900">
     <ToolBar>
@@ -18,23 +19,23 @@
         <ResizePane side="RIGHT" styleClass="invisible-handle">
             <TextField text="Resizable textfield" minWidth="140" maxWidth="300"/>
         </ResizePane>
-        <ResizePane side="RIGHT" styleClass="grabber-handle" spacing="2">
+        <ResizePane side="RIGHT" styleClass="grabber-handle, small">
             <Button text="Resizable button" minWidth="120" prefWidth="200" maxWidth="300"/>
         </ResizePane>
         <Button text="Button"/>
     </ToolBar>
 
     <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="removeInsetBorder">
-        <VBox>
+        <VBox spacing="0">
 
             <ResizePane styleClass="grabber-handle">
                 <padding>
-                    <Insets left="0" top="0" right="0" bottom="8"/>
+                    <Insets left="0" top="0" right="0" bottom="0"/>
                 </padding>
                 <!-- maxHeight is defined by the HBox, minHeight by one of the listviews -->
                 <HBox spacing="8" maxHeight="500">
                     <padding>
-                        <Insets left="8" top="8" right="8" bottom="8"/>
+                        <Insets left="8" top="8" right="8" bottom="2"/>
                     </padding>
                     <ListView minHeight="100" HBox.hgrow="ALWAYS" prefWidth="200">
                         <placeholder>
@@ -51,10 +52,7 @@
                 <padding>
                     <Insets left="8" top="8" right="8" bottom="8"/>
                 </padding>
-                <ResizePane fx:id="resizePane2" styleClass="grabber-handle" spacing="2">
-                    <padding>
-                        <Insets left="0" top="0" right="0" bottom="2"/>
-                    </padding>
+                <ResizePane fx:id="resizePane2" styleClass="grabber-handle">
                     <ListView minHeight="100" styleClass="removeInsetBorder">
                         <placeholder>
                             <Label text="Resizable list view"/>
@@ -65,4 +63,32 @@
 
         </VBox>
     </ScrollPane>
+
+    <HBox maxHeight="100">
+        <ResizePane side="RIGHT" styleClass="grabber-handle">
+            <ListView minHeight="100" minWidth="100" maxWidth="300">
+                <placeholder>
+                    <Label text="Left list view"/>
+                </placeholder>
+            </ListView>
+        </ResizePane>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <ResizePane side="LEFT" styleClass="grabber-handle">
+            <ListView minHeight="100" minWidth="100" maxWidth="300">
+                <placeholder>
+                    <Label text="Right list view"/>
+                </placeholder>
+            </ListView>
+        </ResizePane>
+    </HBox>
+
+    <Pane VBox.vgrow="ALWAYS"/>
+
+    <ResizePane side="TOP" styleClass="grabber-handle">
+        <ListView styleClass="removeInsetBorder" minHeight="100" maxHeight="300">
+            <placeholder>
+                <Label text="Bottom list view"/>
+            </placeholder>
+        </ListView>
+    </ResizePane>
 </VBox>

@@ -41,6 +41,7 @@ public class ResizePane extends Control {
         getStyleClass().setAll(DEFAULT_CLASS);
         ((StyleableProperty<Boolean>) focusTraversableProperty()).applyStyle(null, false);
         pseudoClassStateChanged(HORIZONTAL_PSEUDOCLASS_STATE, true);
+        pseudoClassStateChanged(BOTTOM_PSEUDOCLASS_STATE, true);
     }
 
     public ResizePane(final Node content) {
@@ -80,6 +81,11 @@ public class ResizePane extends Control {
                 protected void invalidated() {
                     pseudoClassStateChanged(VERTICAL_PSEUDOCLASS_STATE, get().isVertical());
                     pseudoClassStateChanged(HORIZONTAL_PSEUDOCLASS_STATE, get().isHorizontal());
+
+                    pseudoClassStateChanged(BOTTOM_PSEUDOCLASS_STATE, get() == Side.BOTTOM);
+                    pseudoClassStateChanged(TOP_PSEUDOCLASS_STATE, get() == Side.TOP);
+                    pseudoClassStateChanged(LEFT_PSEUDOCLASS_STATE, get() == Side.LEFT);
+                    pseudoClassStateChanged(RIGHT_PSEUDOCLASS_STATE, get() == Side.RIGHT);
                 }
 
                 @Override
@@ -153,6 +159,11 @@ public class ResizePane extends Control {
 
     private static final PseudoClass VERTICAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("vertical");
     private static final PseudoClass HORIZONTAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("horizontal");
+
+    private static final PseudoClass TOP_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("top");
+    private static final PseudoClass BOTTOM_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("bottom");
+    private static final PseudoClass LEFT_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("left");
+    private static final PseudoClass RIGHT_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("right");
 
     private static class StyleableProperties {
 
