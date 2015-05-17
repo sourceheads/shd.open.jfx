@@ -34,10 +34,10 @@ public class TreePaneDemo extends Application {
     @Override
     public void start(final Stage primaryStage) throws Exception {
 
-        final TreeNode root = buildNode(
+        final TreeNode root = buildNode(true,
                 buildNode(),
-                buildNode(buildNode(),buildNode()),
-                buildNode(buildNode(),buildNode()),
+                buildNode(buildNode(), buildNode()),
+                buildNode(buildNode(), buildNode()),
                 buildNode()
         );
         // root.setExpanded(true);
@@ -54,6 +54,7 @@ public class TreePaneDemo extends Application {
         treePane.setConnectorLayout(connectorLayout);
 
         final ScrollPane scrollPane = new ScrollPane(treePane);
+        scrollPane.setPannable(true);
 
         final CheckBox chkShowRoot = new CheckBox("Show root");
         chkShowRoot.setMinWidth(Region.USE_PREF_SIZE);
@@ -168,7 +169,7 @@ public class TreePaneDemo extends Application {
         //
 
         final HBox hBox = new HBox(10,
-                chkShowRoot,
+                new TitledPane("Tree pane", new VBox(10, chkShowRoot)),
                 new TitledPane("Tree layout", new HBox(10,
                         new VBox(new Label("H spacing"), horizontalSpinner),
                         new VBox(new Label("V spacing"), verticalSpinner),
@@ -193,6 +194,10 @@ public class TreePaneDemo extends Application {
     }
 
     private TreeNode buildNode(final TreeNode... children) {
+        return buildNode(false, children);
+    }
+
+    private TreeNode buildNode(final boolean root, final TreeNode... children) {
         final TreeNode treeNode = new TreeNode();
         final ObservableList<TreeNode> nodeChildren = treeNode.getChildren();
         nodeChildren.addAll(children);
@@ -200,10 +205,6 @@ public class TreePaneDemo extends Application {
         final Button btnAdd = new Button("Add");
         btnAdd.setPadding(new Insets(1, 4, 1, 4));
         btnAdd.setOnAction(event -> nodeChildren.add(buildNode()));
-
-        final  Button btnRemove = new Button("Remove");
-        btnRemove.setPadding(new Insets(1, 4, 1, 4));
-        btnRemove.setOnAction(event -> treeNode.getParent().getChildren().remove(treeNode));
 
         final CheckBox checkBox = new CheckBox();
         checkBox.setSelected(true);
@@ -214,11 +215,18 @@ public class TreePaneDemo extends Application {
         final Label label = new Label(lorem());
         label.setOnMouseClicked(event -> label.setText(lorem()));
 
-        final HBox hBox = new HBox(checkBox, label, btnAdd, btnRemove);
+        final HBox hBox = new HBox(checkBox, label, btnAdd);
         HBox.setMargin(btnAdd, new Insets(0, 0, 0, 8));
-        HBox.setMargin(btnRemove, new Insets(0, 0, 0, 8));
         hBox.setAlignment(Pos.CENTER_LEFT);
         hBox.setSpacing(0);
+
+        if (!root) {
+            final Button btnRemove = new Button("Remove");
+            btnRemove.setPadding(new Insets(1, 4, 1, 4));
+            btnRemove.setOnAction(event -> treeNode.getParent().getChildren().remove(treeNode));
+            HBox.setMargin(btnRemove, new Insets(0, 0, 0, 8));
+            hBox.getChildren().add(btnRemove);
+        }
 
         final TitledPane titledPane = new TitledPane(null, hBox);
         titledPane.setExpanded(children.length > 0);

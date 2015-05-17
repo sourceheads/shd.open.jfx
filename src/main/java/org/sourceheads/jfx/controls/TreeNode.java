@@ -21,22 +21,10 @@ import javafx.scene.Node;
 public class TreeNode implements Observable {
 
     private final ObjectProperty<Node> node = new SimpleObjectProperty<>();
-
-    private final BooleanProperty expanded = new SimpleBooleanProperty() {
-
-        @Override
-        protected void invalidated() {
-            super.invalidated();
-            invalidate();
-        }
-    };
-
+    private final BooleanProperty expanded = new SimpleBooleanProperty();
     protected final ReadOnlyObjectWrapper<TreeNode> parent = new ReadOnlyObjectWrapper<>();
-
     private final ObservableList<TreeNode> children = FXCollections.observableArrayList();
-
     private final ObservableList<InvalidationListener> invalidationListeners = FXCollections.observableArrayList();
-
     private final ObservableList<ListChangeListener<TreeNode>> listChangeListeners = FXCollections.observableArrayList();
 
     //
@@ -49,10 +37,12 @@ public class TreeNode implements Observable {
             }
             listChange(c);
         });
+        expanded.addListener(observable -> invalidate());
     }
 
     public TreeNode(final Node node) {
-        this.node.setValue(node);
+        this();
+        setNode(node);
     }
 
     //
@@ -107,7 +97,7 @@ public class TreeNode implements Observable {
         this.invalidationListeners.remove(listener);
     }
 
-    protected void invalidate() {
+    private void invalidate() {
         invalidationListeners.forEach(l -> l.invalidated(this));
         if (parent.get() != null) {
             parent.get().invalidate();
@@ -123,8 +113,12 @@ public class TreeNode implements Observable {
     }
 
     protected void listChange(final ListChangeListener.Change<? extends TreeNode> change) {
-        listChangeListeners.forEach(l -> l.onChanged(change));
+        listChangeListeners.forEach(l -> {
+            change.reset();
+            l.onChanged(change);
+        });
         if (parent.get() != null) {
+            change.reset();
             parent.get().listChange(change);
         }
     }

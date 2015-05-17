@@ -2,6 +2,7 @@ package org.sourceheads.jfx.controls;
 
 import java.util.Iterator;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -43,12 +44,13 @@ public class DefaultConnectorLayout implements ConnectorLayout {
 
     public DefaultConnectorLayout(final TreePane treePane) {
         this.treePane = treePane;
-        horizontalPosition.addListener(o -> treePane.requestLayout());
-        horizontalPositioning.addListener(o -> treePane.requestLayout());
-        verticalPosition.addListener(o -> treePane.requestLayout());
-        verticalPositioning.addListener(o -> treePane.requestLayout());
-        parentSpacing.addListener(o -> treePane.requestLayout());
-        childSpacing.addListener(o -> treePane.requestLayout());
+        final InvalidationListener listener = o -> treePane.requestLayout();
+        horizontalPosition.addListener(listener);
+        horizontalPositioning.addListener(listener);
+        verticalPosition.addListener(listener);
+        verticalPositioning.addListener(listener);
+        parentSpacing.addListener(listener);
+        childSpacing.addListener(listener);
     }
 
     @Override
@@ -75,18 +77,21 @@ public class DefaultConnectorLayout implements ConnectorLayout {
         }
 
         final Node parent = treeNode.getNode();
-
-        final TreeNode firstTreeNode = children.get(0);
-        final Node firstChild = firstTreeNode.getNode();
-        final Node lastChild = children.get(children.size() - 1).getNode();
-
         final double canvasX = parent.getLayoutX() + parent.prefWidth(Region.USE_PREF_SIZE) + getParentSpacing();
         final double canvasY = parent.getLayoutY();
-        final double canvasWidth = firstChild.getLayoutX() - canvasX - getChildSpacing();
-        double canvasHeight = Math.min(parent.prefHeight(Region.USE_PREF_SIZE), firstChild.prefHeight(Region.USE_PREF_SIZE));
 
+        final Node firstChild = children.get(0).getNode();
+        final double canvasWidth = firstChild.getLayoutX() - canvasX - getChildSpacing();
+
+        final Node lastChild;
+        final double canvasHeight;
         if (children.size() > 1) {
+            lastChild = children.get(children.size() - 1).getNode();
             canvasHeight = lastChild.getLayoutY() + lastChild.prefHeight(Region.USE_PREF_SIZE) - firstChild.getLayoutY();
+        }
+        else {
+            lastChild = firstChild;
+            canvasHeight = Math.min(parent.prefHeight(Region.USE_PREF_SIZE), firstChild.prefHeight(Region.USE_PREF_SIZE));
         }
 
         final Canvas canvas = new Canvas(canvasWidth, canvasHeight);
@@ -96,20 +101,34 @@ public class DefaultConnectorLayout implements ConnectorLayout {
         final GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setStroke(Color.DARKGREY);
 
-        final double y = Math.min(getVerticalHalf(parent), getVerticalHalf(firstChild));
+        final double y = Math.min(getVertPos(parent), getVertPos(firstChild));
         gc.moveTo(0, y);
         gc.lineTo(canvasWidth, y);
         gc.stroke();
 
         if (children.size() > 1) {
-            final double c = Math.floor(canvasWidth * getHorizontalPosition()) + .5;
+            final double c;
+            switch (getHorizontalPositioning()) {
+                case RELATIVE:
+                    c = Math.min(Math.floor(canvasWidth * getHorizontalPosition()), canvasWidth - 1) + .5;
+                    break;
+                case ABSOLUTE_LEFT:
+                    c = getHorizontalPosition();
+                    break;
+                case ABSOLUTE_RIGHT:
+                    c = canvasWidth - getHorizontalPosition();
+                    break;
+                default:
+                    throw new IllegalStateException("Unsupported horizontal positioning: " + getHorizontalPositioning());
+            }
+
             gc.moveTo(c, y);
-            gc.lineTo(c, canvasHeight - lastChild.prefHeight(Region.USE_PREF_SIZE) + getVerticalHalf(lastChild));
+            gc.lineTo(c, canvasHeight - lastChild.prefHeight(Region.USE_PREF_SIZE) + getVertPos(lastChild));
             gc.stroke();
 
             for (final TreeNode child : children.subList(1, children.size())) {
                 final Node node = child.getNode();
-                final double ny = node.getLayoutY() - canvasY + getVerticalHalf(node);
+                final double ny = node.getLayoutY() - canvasY + getVertPos(node);
                 gc.moveTo(c, ny);
                 gc.lineTo(canvasWidth, ny);
                 gc.stroke();
@@ -121,7 +140,7 @@ public class DefaultConnectorLayout implements ConnectorLayout {
         children.forEach(this::drawLines);
     }
 
-    private double getVerticalHalf(final Node node) {
+    private double getVertPos(final Node node) {
         switch (getVerticalPositioning()) {
             case RELATIVE:
                 return Math.floor(node.prefHeight(Region.USE_PREF_SIZE) * getVerticalPosition()) + .5;

@@ -3,6 +3,7 @@ package org.sourceheads.jfx.controls;
 import java.util.Collection;
 import java.util.Collections;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -25,9 +26,10 @@ public class DefaultTreeLayout implements TreeLayout {
 
     public DefaultTreeLayout(final TreePane treePane) {
         this.treePane = treePane;
-        verticalSpacing.addListener(observable -> treePane.requestLayout());
-        horizontalSpacing.addListener(observable -> treePane.requestLayout());
-        alignCousins.addListener(observable -> treePane.requestLayout());
+        final InvalidationListener listener = o -> treePane.requestLayout();
+        verticalSpacing.addListener(listener);
+        horizontalSpacing.addListener(listener);
+        alignCousins.addListener(listener);
     }
 
     @Override

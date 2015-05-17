@@ -15,23 +15,7 @@ import javafx.scene.layout.Pane;
  */
 public class TreePane extends Pane {
 
-    private final ObjectProperty<TreeNode> root = new SimpleObjectProperty<TreeNode>() {
-
-        @Override
-        public void set(final TreeNode newValue) {
-            if (get() != null) {
-                get().removeListener(layoutListener);
-                get().removeListener(listChangeListener);
-            }
-            super.set(newValue);
-            newValue.addListener(layoutListener);
-            newValue.addListener(listChangeListener);
-
-            getChildren().clear();
-            addTreeNodes(newValue);
-            requestLayout();
-        }
-    };
+    private final ObjectProperty<TreeNode> root = new SimpleObjectProperty<>();
 
     private final BooleanProperty showRoot = new SimpleBooleanProperty(true);
 
@@ -40,10 +24,9 @@ public class TreePane extends Pane {
     private final ObjectProperty<ConnectorLayout> connectorLayout =
             new SimpleObjectProperty<>(new DefaultConnectorLayout(this));
 
-    protected final InvalidationListener layoutListener = observable -> requestLayout();
+    private final InvalidationListener layoutListener = observable -> requestLayout();
 
-    protected final ListChangeListener<TreeNode> listChangeListener = c -> {
-        c.reset();
+    private final ListChangeListener<TreeNode> listChangeListener = c -> {
         while (c.next()) {
             c.getRemoved().forEach(this::removeTreeNodes);
             c.getAddedSubList().forEach(this::addTreeNodes);
@@ -64,6 +47,19 @@ public class TreePane extends Pane {
     //
 
     public TreePane() {
+        root.addListener((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                oldValue.removeListener(layoutListener);
+                oldValue.removeListener(listChangeListener);
+            }
+
+            newValue.addListener(layoutListener);
+            newValue.addListener(listChangeListener);
+
+            getChildren().clear();
+            addTreeNodes(newValue);
+            requestLayout();
+        });
         showRoot.addListener(layoutListener);
         treeLayout.addListener(layoutListener);
         connectorLayout.addListener(layoutListener);
@@ -71,7 +67,7 @@ public class TreePane extends Pane {
 
     public TreePane(final TreeNode root) {
         this();
-        this.root.setValue(root);
+        setRoot(root);
     }
 
     @Override
