@@ -1,15 +1,11 @@
 package org.sourceheads.jfx.controls;
 
-import java.util.Collections;
-
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-
 import javafx.geometry.HPos;
 import javafx.geometry.Side;
 import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.control.SkinBase;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 
@@ -18,14 +14,16 @@ import javafx.scene.shape.Rectangle;
  *
  * @author Stefan Fiedler
  */
-public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<ResizePane>> {
+public class ResizePaneSkin extends SkinBase<ResizePane> {
 
     private Content content;
     private Handle handle;
-    protected Side side;
 
-    protected ResizePaneSkin(final ResizePane resizePane) {
-        super(resizePane, new BehaviorBase<>(resizePane, Collections.emptyList()));
+    @SuppressWarnings("WeakerAccess")
+    Side side; // package-private to avoid synthetic accessor
+
+    ResizePaneSkin(final ResizePane resizePane) {
+        super(resizePane);
 
         side = resizePane.getSide();
 
@@ -34,11 +32,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         getChildren().setAll(content, handle);
 
         initHandleMouseHandlers();
-
-        registerChangeListener(resizePane.contentProperty(), "CONTENT");
-        registerChangeListener(resizePane.sideProperty(), "SIDE");
-        registerChangeListener(resizePane.widthProperty(), "WIDTH");
-        registerChangeListener(resizePane.heightProperty(), "HEIGHT");
+        initChangeListeners(resizePane);
     }
 
     private void initHandleMouseHandlers() {
@@ -68,25 +62,21 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         });
     }
 
-    @Override
-    protected void handleControlPropertyChanged(final String property) {
-        super.handleControlPropertyChanged(property);
-        switch (property) {
-            case "CONTENT":
-                content = new Content(getSkinnable().getContent());
-                getChildren().setAll(content, handle);
-                getSkinnable().requestLayout();
-                break;
-            case "SIDE":
-                side = getSkinnable().getSide();
-                handle.setGrabberStyle(side);
-                getSkinnable().requestLayout();
-                break;
-            case "WIDTH":
-            case "HEIGHT":
-                getSkinnable().requestLayout();
-                break;
-        }
+    private void initChangeListeners(final ResizePane resizePane) {
+        registerChangeListener(resizePane.contentProperty(), value -> {
+            content = new Content(getSkinnable().getContent());
+            getChildren().setAll(content, handle);
+            getSkinnable().requestLayout();
+        });
+
+        registerChangeListener(resizePane.sideProperty(), value -> {
+            side = getSkinnable().getSide();
+            handle.setGrabberStyle(side);
+            getSkinnable().requestLayout();
+        });
+
+        registerChangeListener(resizePane.widthProperty(), value -> getSkinnable().requestLayout());
+        registerChangeListener(resizePane.heightProperty(), value -> getSkinnable().requestLayout());
     }
 
     @Override
@@ -194,7 +184,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         private double pressPos;
         private StackPane grabber;
 
-        public Handle() {
+        Handle() {
             getStyleClass().setAll("resize-pane-handle");
 
             grabber = new StackPane() {
@@ -234,7 +224,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
             getChildren().add(grabber);
         }
 
-        public final void setGrabberStyle(final Side side) {
+        final void setGrabberStyle(final Side side) {
             if (side.isHorizontal()) {
                 setCursor(Cursor.V_RESIZE);
             }
@@ -295,19 +285,19 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
             }
         }
 
-        public double getInitialPos() {
+        double getInitialPos() {
             return initialPos;
         }
 
-        public void setInitialPos(final double initialPos) {
+        void setInitialPos(final double initialPos) {
             this.initialPos = initialPos;
         }
 
-        public double getPressPos() {
+        double getPressPos() {
             return pressPos;
         }
 
-        public void setPressPos(final double pressPos) {
+        void setPressPos(final double pressPos) {
             this.pressPos = pressPos;
         }
     }
@@ -318,7 +308,7 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
         private Rectangle clipRect;
         private double size = 0;
 
-        public Content(final Node node) {
+        Content(final Node node) {
             if (node != null) {
                 this.content = node;
                 this.size = side.isVertical()
@@ -330,35 +320,35 @@ public class ResizePaneSkin extends BehaviorSkinBase<ResizePane, BehaviorBase<Re
             setClip(clipRect);
         }
 
-        protected void setClipSize(final double w, final double h) {
+        void setClipSize(final double w, final double h) {
             clipRect.setWidth(w);
             clipRect.setHeight(h);
         }
 
-        public double getSize() {
+        double getSize() {
             return size;
         }
 
-        public void setSize(final double size) {
+        void setSize(final double size) {
             this.size = Math.min(Math.max(size, getMinSize()), getMaxSize());
         }
 
-        public double getMinSize() {
+        double getMinSize() {
             return content != null ? (side.isVertical() ? content.minWidth(-1) : content.minHeight(-1)) : 0;
         }
 
-        public double getMaxSize() {
+        double getMaxSize() {
             return content != null ? (side.isVertical() ? content.maxWidth(-1) : content.maxHeight(-1)) : 0;
         }
 
         @Override
         protected double computeMaxWidth(final double height) {
-            return content != null ? snapSize(content.maxWidth(height)) : Double.MAX_VALUE;
+            return content != null ? snapSizeX(content.maxWidth(height)) : Double.MAX_VALUE;
         }
 
         @Override
         protected double computeMaxHeight(final double width) {
-            return content != null ? snapSize(content.maxHeight(width)) : Double.MAX_VALUE;
+            return content != null ? snapSizeY(content.maxHeight(width)) : Double.MAX_VALUE;
         }
     }
 }

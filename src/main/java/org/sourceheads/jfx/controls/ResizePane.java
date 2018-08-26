@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.sun.javafx.css.converters.EnumConverter;
-import com.sun.javafx.css.converters.SizeConverter;
-
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -17,6 +14,8 @@ import javafx.css.Styleable;
 import javafx.css.StyleableDoubleProperty;
 import javafx.css.StyleableObjectProperty;
 import javafx.css.StyleableProperty;
+import javafx.css.converter.EnumConverter;
+import javafx.css.converter.SizeConverter;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Control;
@@ -74,7 +73,7 @@ public class ResizePane extends Control {
 
     public final ObjectProperty<Side> sideProperty() {
         if (side == null) {
-            side = new StyleableObjectProperty<Side>(Side.BOTTOM) {
+            side = new StyleableObjectProperty<>(Side.BOTTOM) {
 
                 @Override
                 @SuppressWarnings("PrivateMemberAccessBetweenOuterAndInnerClass")
@@ -167,7 +166,7 @@ public class ResizePane extends Control {
 
     private static class StyleableProperties {
 
-        private static final CssMetaData<ResizePane, Side> SIDE = new CssMetaData<ResizePane, Side>(
+        private static final CssMetaData<ResizePane, Side> SIDE = new CssMetaData<>(
                 "-fx-side", new EnumConverter<>(Side.class), Side.BOTTOM) {
 
             @Override
@@ -188,7 +187,7 @@ public class ResizePane extends Control {
             }
         };
 
-        private static final CssMetaData<ResizePane, Number> SPACING = new CssMetaData<ResizePane, Number>(
+        private static final CssMetaData<ResizePane, Number> SPACING = new CssMetaData<>(
                 "-fx-spacing", SizeConverter.getInstance(), 0d) {
 
             @Override

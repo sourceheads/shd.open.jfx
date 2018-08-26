@@ -1,11 +1,10 @@
 package org.sourceheads.jfx.controls;
 
-import com.sun.javafx.scene.control.skin.TitledPaneSkin;
-
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.skin.TitledPaneSkin;
 import javafx.scene.layout.Region;
 
 /**
@@ -34,7 +33,7 @@ public class TitledPaneEx extends TitledPane {
         final Region arrow;
         final Region title;
 
-        public TitledPaneExSkin(final TitledPane titledPane) {
+        TitledPaneExSkin(final TitledPane titledPane) {
             super(titledPane);
             arrow = (Region) getSkinnable().lookup(".arrow-button");
             title = (Region) getSkinnable().lookup(".title");

@@ -57,12 +57,12 @@ public class ServiceRegistryImpl implements ServiceRegistry {
     @Override
     public Object call(final Class<?> param) {
         try {
-            final Object controller = param.newInstance();
+            final Object controller = param.getDeclaredConstructor().newInstance();
             register(controller);
             wireAndInitializeService(controller);
             return controller;
         }
-        catch (final InstantiationException | IllegalAccessException e) {
+        catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new IllegalStateException(e);
         }
     }

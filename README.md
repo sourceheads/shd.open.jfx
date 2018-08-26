@@ -1,15 +1,27 @@
-shd.open.jfx
-============
+# shd.open.jfx
 
-Stuff for JavaFX 8. Work in progress.
+Stuff for JavaFX. Requires Java 10+. Work in progress.
 
 [![Build Status](https://travis-ci.org/sourceheads/shd.open.jfx.svg)](https://travis-ci.org/sourceheads/shd.open.jfx)
 
-License
--------
+## Controls
+
+### ResizePane
+
+![ResizePane Demo Screenshot](https://d37nbcpcp57i4i.cloudfront.net/shd.open.jfx/i/resizepane_demo-v1.png)
+
+Run `ResizePaneDemo` for a demo.
+
+### TreePane
+
+![TreePane Demo Screenshot](https://d37nbcpcp57i4i.cloudfront.net/shd.open.jfx/i/treepane_demo-v1.png)
+
+Run `TreePaneDemo` for a demo.
+
+## License
 
 ```
-Copyright 2014 sourceheads Information Technology GmbH
+Copyright 2014-2018 sourceheads Information Technology GmbH
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
